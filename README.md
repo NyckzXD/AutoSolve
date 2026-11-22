@@ -61,10 +61,12 @@ Esse arquivo é ignorado pelo Git (ver `.gitignore`) e não deve ser versionado.
 3. Em outro terminal, execute o script:
 
    ```bash
-   python test_models.py
+   python main.py
    ```
 
-4. O script passará a monitorar a página. Ao detectar uma nova questão, ele consulta a IA e exibe a resposta sugerida em um popup.
+4. O script passará a monitorar a página. Ao detectar uma nova questão, ele consulta a IA e exibe a resposta sugerida em um popup (exibido em thread própria, sem pausar o monitoramento). A resposta da IA é interpretada: quando a letra é reconhecida, o popup mostra a alternativa completa (por exemplo, `B) Roma`); caso contrário, mostra a resposta crua.
+
+Variáveis opcionais no `.env`: `GROQ_MODEL` (padrão `openai/gpt-oss-120b`).
 
 Para encerrar o monitoramento, interrompa o processo com `Ctrl+C` ou feche o Chrome conectado.
 
@@ -72,16 +74,25 @@ Para encerrar o monitoramento, interrompa o processo com `Ctrl+C` ou feche o Chr
 
 ```
 REPO/
-├── test_models.py          # Script principal
+├── main.py                 # Script principal
+├── tests/test_main.py      # Testes unitários (pytest)
+├── pytest.ini              # Configuração do pytest
 ├── requirements.txt        # Dependências do projeto
 ├── chave.env.example       # Modelo de arquivo de variáveis de ambiente
-├── setup.github/workflows/ # Workflow de verificação no GitHub Actions
+├── .github/workflows/      # Workflow de CI (GitHub Actions)
 └── .gitignore
 ```
 
-## Integração contínua
+## Testes e integração contínua
 
-O workflow definido em `setup.github/workflows/run-main.yml` valida, a cada push na branch `main`, que `test_models.py` compila sem erros de sintaxe ou dependências ausentes. A execução completa do script não é realizada em CI, pois depende de uma instância local do Chrome (porta 9222) e de um ambiente gráfico para o Tkinter.
+```bash
+pip install -r requirements.txt pytest
+python -m pytest
+```
+
+O workflow `.github/workflows/ci.yml` roda esses testes a cada push na `main` e em pull requests. Eles cobrem a lógica pura (interpretação da resposta da IA, montagem do prompt, assinatura da questão). O fluxo completo não roda em CI, pois depende de uma instância local do Chrome (porta 9222) e de um ambiente gráfico para o Tkinter.
+
+O Tkinter acompanha o Python no Windows e no macOS; no Linux pode ser preciso instalar o pacote do sistema (por exemplo, `sudo apt install python3-tk`).
 
 ## Limitações conhecidas
 
